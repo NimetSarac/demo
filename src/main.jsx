@@ -5,8 +5,7 @@ import { AuthProvider } from './context/AuthContext';
 import App from './App';
 import theme from './theme';
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(
+ReactDOM.createRoot(document.getElementById('root')).render(
     <React.StrictMode>
         <ChakraProvider theme={theme}>
             <AuthProvider>

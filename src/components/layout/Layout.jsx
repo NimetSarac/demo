@@ -1,24 +1,16 @@
 import Navbar from './Navbar';
 import Footer from './Footer';
+import { Box, Flex } from '@chakra-ui/react';
 
 function Layout({ children }) {
     return (
-        <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            minHeight: '100vh'   // footer her zaman en altta
-        }}>
+        <Flex direction="column" minH="100vh">
             <Navbar />
-
-            <main style={{
-                flex: 1,
-                padding: '20px 30px'
-            }}>
+            <Box flex={1} p={6}>
                 {children}
-            </main>
-
+            </Box>
             <Footer />
-        </div>
+        </Flex>
     );
 }
 

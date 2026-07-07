@@ -1,27 +1,23 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import {
+    Box, Flex, Text, Button, Badge,
+    Link, HStack
+} from '@chakra-ui/react';
+import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 
 function Navbar() {
 
-    const [user, setUser] = useState(null);
+    const { user, logout, isAdmin } = useAuth();
     const [cartCount, setCartCount] = useState(0);
     const navigate = useNavigate();
 
     useEffect(() => {
-        // localStorage'dan kullanıcı bilgisini al
-        const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-            setUser(JSON.parse(storedUser));
-        }
-    }, []);
-
-    useEffect(() => {
-        // Giriş yapılmışsa sepet ürün sayısını çek
         if (user) {
             api.get(`/api/cart/${user.id}`)
-                .then(response => {
-                    const items = response.data.data.items;
+                .then(res => {
+                    const items = res.data.data.items;
                     setCartCount(items ? items.length : 0);
                 })
                 .catch(() => setCartCount(0));
@@ -29,127 +25,96 @@ function Navbar() {
     }, [user]);
 
     const handleLogout = async () => {
-        try {
-            await api.post('/api/auth/logout');
-        } catch (err) {
-            console.error('Çıkış hatası:', err);
-        } finally {
-            localStorage.removeItem('user');
-            setUser(null);
-            navigate('/login');
-        }
+        await logout();
+        navigate('/login');
     };
 
     return (
-        <nav style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '12px 30px',
-            backgroundColor: '#1a1a2e',
-            color: 'white'
-        }}>
-            {/* Logo */}
-            <Link to="/" style={{
-                color: 'white',
-                textDecoration: 'none',
-                fontSize: '22px',
-                fontWeight: 'bold'
-            }}>
-                🛒 E-Ticaret
-            </Link>
+        <Box bg="#0d47a1" px={8} py={3} color="white" position="sticky" top={0} zIndex={100}>
+            <Flex align="center" justify="space-between">
 
-            {/* Kategori Menüsü */}
-            <div style={{ display: 'flex', gap: '20px' }}>
-                <Link to="/" style={{ color: 'white', textDecoration: 'none' }}>
-                    Ana Sayfa
+                {/* Logo */}
+                <Link as={RouterLink} to="/" _hover={{ textDecoration: 'none' }}>
+                    <Text fontSize="xl" fontWeight="bold">🛒 E-Ticaret</Text>
                 </Link>
-                <Link to="/products" style={{ color: 'white', textDecoration: 'none' }}>
-                    Ürünler
-                </Link>
-                {user?.role === 'ADMIN' && (
-                    <Link to="/admin" style={{ color: '#ffd700', textDecoration: 'none' }}>
-                        Admin Panel
+
+                {/* Menü */}
+                <HStack spacing={6}>
+                    <Link as={RouterLink} to="/" color="white" _hover={{ color: 'blue.200' }}>
+                        Ana Sayfa
                     </Link>
-                )}
-            </div>
-
-            {/* Sağ Taraf: Sepet + Giriş/Çıkış */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-
-                {/* Sepet ikonu — sadece giriş yapılmışsa */}
-                {user && (
-                    <Link to="/cart" style={{
-                        color: 'white',
-                        textDecoration: 'none',
-                        position: 'relative'
-                    }}>
-                        🛒
-                        {cartCount > 0 && (
-                            <span style={{
-                                position: 'absolute',
-                                top: '-8px',
-                                right: '-8px',
-                                background: 'red',
-                                color: 'white',
-                                borderRadius: '50%',
-                                width: '18px',
-                                height: '18px',
-                                fontSize: '11px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center'
-                            }}>
-                                {cartCount}
-                            </span>
-                        )}
+                    <Link as={RouterLink} to="/products" color="white" _hover={{ color: 'blue.200' }}>
+                        Ürünler
                     </Link>
-                )}
+                    {isAdmin() && (
+                        <Link as={RouterLink} to="/admin" color="yellow.300" _hover={{ color: 'yellow.100' }}>
+                            Admin Panel
+                        </Link>
+                    )}
+                </HStack>
 
-                {/* Giriş yapılmışsa kullanıcı adı + çıkış */}
-                {user ? (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <Link to="/profile" style={{ color: '#90caf9', textDecoration: 'none' }}>
-                            👤 {user.username}
-                        </Link>
-                        <button
-                            onClick={handleLogout}
-                            style={{
-                                background: '#e53935',
-                                color: 'white',
-                                border: 'none',
-                                padding: '6px 12px',
-                                borderRadius: '4px',
-                                cursor: 'pointer'
-                            }}
-                        >
-                            Çıkış
-                        </button>
-                    </div>
-                ) : (
-                    <div style={{ display: 'flex', gap: '10px' }}>
-                        <Link to="/login" style={{
-                            color: 'white',
-                            textDecoration: 'none',
-                            padding: '6px 12px',
-                            border: '1px solid white',
-                            borderRadius: '4px'
-                        }}>
-                            Giriş
-                        </Link>
-                        <Link to="/register" style={{
-                            background: '#1976d2',
-                            color: 'white',
-                            textDecoration: 'none',
-                            padding: '6px 12px',
-                            borderRadius: '4px'
-                        }}>
-                            Kayıt Ol
-                        </Link>
-                    </div>
-                )}
-            </div>
-        </nav>
+                {/* Sağ taraf */}
+                <HStack spacing={4}>
+
+                    {/* Sepet — sadece giriş yapılmışsa */}
+                    {user && (
+                        <Box position="relative">
+                            <Link as={RouterLink} to="/cart" color="white" fontSize="xl">
+                                🛒
+                            </Link>
+                            {cartCount > 0 && (
+                                <Badge
+                                    colorScheme="red"
+                                    position="absolute"
+                                    top="-8px"
+                                    right="-8px"
+                                    borderRadius="full"
+                                    fontSize="10px"
+                                >
+                                    {cartCount}
+                                </Badge>
+                            )}
+                        </Box>
+                    )}
+
+                    {/* Giriş/Çıkış */}
+                    {user ? (
+                        <HStack spacing={3}>
+                            <Link as={RouterLink} to="/profile" color="white">
+                                👤 {user.username}
+                            </Link>
+                            <Button size="sm" colorScheme="red" onClick={handleLogout}>
+                                Çıkış
+                            </Button>
+                        </HStack>
+                    ) : (
+                        <HStack spacing={2}>
+                            <Button
+                                as={RouterLink}
+                                to="/login"
+                                size="sm"
+                                variant="outline"
+                                borderColor="white"
+                                color="white"
+                                _hover={{ bg: 'whiteAlpha.200' }}
+                            >
+                                Giriş
+                            </Button>
+                            <Button
+                                as={RouterLink}
+                                to="/register"
+                                size="sm"
+                                bg="white"
+                                color="#0d47a1"
+                                _hover={{ bg: 'gray.100' }}
+                            >
+                                Kayıt Ol
+                            </Button>
+                        </HStack>
+                    )}
+                </HStack>
+            </Flex>
+        </Box>
     );
 }
 

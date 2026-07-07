@@ -1,5 +1,4 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-
 import Layout from './components/layout/Layout';
 import Home from './pages/Home';
 import Login from './pages/Login';
@@ -21,7 +20,6 @@ function App() {
                     <Route path="/cart" element={<Cart />} />
                     <Route path="/admin" element={<Admin />} />
                     <Route path="/products" element={<Products />} />
-                    
                 </Routes>
             </Layout>
         </BrowserRouter>

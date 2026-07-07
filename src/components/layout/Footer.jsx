@@ -1,19 +1,21 @@
+import { Box, Text, HStack, Link } from '@chakra-ui/react';
+
 function Footer() {
     return (
-        <footer style={{
-            backgroundColor: '#1a1a2e',
-            color: '#aaa',
-            textAlign: 'center',
-            padding: '20px',
-            marginTop: 'auto'
-        }}>
-            <p>© 2026 E-Ticaret — Tüm hakları saklıdır.</p>
-            <div style={{ marginTop: '8px', fontSize: '13px' }}>
-                <a href="#" style={{ color: '#aaa', marginRight: '15px' }}>Gizlilik Politikası</a>
-                <a href="#" style={{ color: '#aaa', marginRight: '15px' }}>Kullanım Koşulları</a>
-                <a href="#" style={{ color: '#aaa' }}>İletişim</a>
-            </div>
-        </footer>
+        <Box bg="brand.700" color="gray.400" textAlign="center" py={5} mt="auto">
+            <Text fontSize="sm">© 2026 E-Ticaret — Tüm hakları saklıdır.</Text>
+            <HStack justify="center" spacing={5} mt={2} fontSize="sm">
+                <Link href="#" color="gray.400" _hover={{ color: 'white' }}>
+                    Gizlilik Politikası
+                </Link>
+                <Link href="#" color="gray.400" _hover={{ color: 'white' }}>
+                    Kullanım Koşulları
+                </Link>
+                <Link href="#" color="gray.400" _hover={{ color: 'white' }}>
+                    İletişim
+                </Link>
+            </HStack>
+        </Box>
     );
 }
 
