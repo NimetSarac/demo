@@ -8,6 +8,7 @@ import {
 import api from '../services/api';
 import ProductSkeleton from '../components/ProductSkeleton';
 import EmptyState from '../components/EmptyState';
+import ProductCard from '../components/ProductCard';
 
 function Products() {
 
@@ -164,8 +165,16 @@ function Products() {
 
             {/* Ürün Grid */}
             {loading ? (
-                <Grid templateColumns="repeat(auto-fill, minmax(220px, 1fr))" gap={6}>
-                    {[...Array(6)].map((_, i) => (
+                <Grid
+                    templateColumns={{
+                        base: '1fr',
+                        sm: 'repeat(2, 1fr)',
+                        md: 'repeat(3, 1fr)',
+                        lg: 'repeat(4, 1fr)'
+                    }}
+                    gap={6}
+                >
+                    {[...Array(8)].map((_, i) => (
                         <ProductSkeleton key={i} />
                     ))}
                 </Grid>
@@ -177,8 +186,8 @@ function Products() {
                         searchKeyword
                             ? `"${searchKeyword}" için sonuç bulunamadı`
                             : selectedCategory
-                            ? 'Bu kategoride ürün bulunamadı'
-                            : 'Henüz ürün eklenmemiş'
+                                ? 'Bu kategoride ürün bulunamadı'
+                                : 'Henüz ürün eklenmemiş'
                     }
                     description={
                         searchKeyword
@@ -196,72 +205,10 @@ function Products() {
             ) : (
                 <Grid templateColumns="repeat(auto-fill, minmax(220px, 1fr))" gap={6}>
                     {products.map(product => (
-                        <Box
+                        <ProductCard
                             key={product.id}
-                            bg="white"
-                            borderRadius="xl"
-                            boxShadow="sm"
-                            overflow="hidden"
-                            transition="all 0.2s"
-                            _hover={{ boxShadow: 'lg', transform: 'translateY(-3px)' }}
-                        >
-                            <Box
-                                bg="gray.50"
-                                h="180px"
-                                display="flex"
-                                alignItems="center"
-                                justifyContent="center"
-                                fontSize="60px"
-                                borderBottom="1px solid"
-                                borderColor="gray.100"
-                            >
-                                🛍️
-                            </Box>
-
-                            <VStack p={4} align="start" spacing={2}>
-                                {product.category && (
-                                    <Badge
-                                        colorScheme="blue"
-                                        cursor="pointer"
-                                        onClick={() => handleCategoryChange(product.category.id)}
-                                    >
-                                        {product.category.name}
-                                    </Badge>
-                                )}
-
-                                <Text fontWeight="bold" fontSize="md" noOfLines={2}>
-                                    {product.name}
-                                </Text>
-
-                                <HStack>
-                                    <Text fontSize="xl" fontWeight="bold" color="red.500">
-                                        {product.price?.toLocaleString('tr-TR')} ₺
-                                    </Text>
-                                    {product.discount > 0 && (
-                                        <Badge colorScheme="green">
-                                            %{product.discount} indirim
-                                        </Badge>
-                                    )}
-                                </HStack>
-
-                                <Text fontSize="xs" color={product.stock > 0 ? 'green.500' : 'red.500'}>
-                                    {product.stock > 0
-                                        ? `✓ Stokta var (${product.stock})`
-                                        : '✗ Stokta yok'}
-                                </Text>
-
-                                <Button
-                                    colorScheme="blue"
-                                    width="100%"
-                                    size="sm"
-                                    isDisabled={product.stock === 0}
-                                    onClick={() => handleAddToCart(product)}
-                                    mt={1}
-                                >
-                                    {product.stock > 0 ? '🛒 Sepete Ekle' : 'Stokta Yok'}
-                                </Button>
-                            </VStack>
-                        </Box>
+                            product={product}
+                        />
                     ))}
                 </Grid>
             )}

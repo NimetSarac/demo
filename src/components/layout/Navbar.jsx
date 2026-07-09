@@ -6,11 +6,12 @@ import {
 } from '@chakra-ui/react';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
+import { useCart } from '../../context/CartContext';
 
 function Navbar() {
 
-    const { user, logout, isAdmin } = useAuth();
-    const [cartCount, setCartCount] = useState(0);
+      const { user, logout, isAdmin } = useAuth();
+    const { cartCount, setCartCount } = useCart();
     const navigate = useNavigate();
 
     useEffect(() => {

@@ -9,13 +9,14 @@ import EmptyState from '../components/EmptyState';
 
 const categoryIcons = {
     'Elektronik': '📱',
-    'Giyim': '👕',
+    'giyim': '👕',
     'Kitap': '📚',
     'Spor': '⚽',
     'Ev & Yaşam': '🏠',
     'Kozmetik': '💄',
     'Oyuncak': '🧸',
     'Otomotiv': '🚗',
+    'beyaz eşya': '🏠'
 };
 
 function Home() {
@@ -49,7 +50,7 @@ function Home() {
                 borderRadius="lg"
                 mb={10}
             >
-                <Heading size="2xl" mb={4}>E-Ticaret'e Hoşgeldiniz</Heading>
+                <Heading size="2xl" mb={4}>NİMET SARAÇ</Heading>
                 <Text fontSize="lg" mb={6}>
                     En iyi ürünleri en uygun fiyatlarla keşfedin.
                 </Text>
@@ -99,7 +100,7 @@ function Home() {
                             transition="all 0.2s"
                             _hover={{
                                 boxShadow: 'md',
-                                border: '2px solid #0d47a1',
+                                border: '2px solid #094194',
                                 transform: 'translateY(-3px)'
                             }}
                         >
