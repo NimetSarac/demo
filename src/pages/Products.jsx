@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link as RouterLink } from 'react-router-dom';
 import {
     Box, Grid, Heading, Text, Button, Input,
-    Select, Badge, HStack, VStack, Flex,
+    Select, HStack, Flex,
     Breadcrumb, BreadcrumbItem, BreadcrumbLink
 } from '@chakra-ui/react';
 import api from '../services/api';
@@ -29,13 +29,12 @@ function Products() {
     useEffect(() => {
         api.get('/api/categories')
             .then(res => {
-                setCategories(res.data.data || []);
+                const cats = res.data.data || [];
+                setCategories(cats);
+
                 if (selectedCategory) {
-                    const cat = (res.data.data || []).find(
-                        c => c.id.toString() === selectedCategory
-                    );
-                    if (cat) setSelectedCategoryName(cat.name);
-                    else setSelectedCategoryName('');
+                    const cat = cats.find(c => c.id === Number(selectedCategory));
+                    setSelectedCategoryName(cat ? cat.name : '');
                 } else {
                     setSelectedCategoryName('');
                 }
@@ -57,15 +56,16 @@ function Products() {
                 .catch(() => setLoading(false));
 
         } else if (selectedCategory) {
-            api.get(`/api/products/category/${selectedCategory}`)
+            api.get(`/api/products/category/${Number(selectedCategory)}`)
                 .then(res => {
-                    setProducts(res.data.data || []);
+                    // res.data.data değil, res.data — backend ApiResponse sarmıyor
+                    const data = res.data.data || res.data || [];
+                    setProducts(Array.isArray(data) ? data : []);
                     setTotalPages(1);
-                    setTotalElements((res.data.data || []).length);
+                    setTotalElements(Array.isArray(data) ? data.length : 0);
                     setLoading(false);
                 })
                 .catch(() => setLoading(false));
-
         } else {
             api.get(`/api/products/paged?page=${currentPage}&size=${pageSize}&sort=id,desc`)
                 .then(res => {
@@ -87,15 +87,6 @@ function Products() {
         }
         setCurrentPage(0);
         setSearchKeyword('');
-    };
-
-    const handleAddToCart = (product) => {
-        const storedUser = localStorage.getItem('user');
-        if (!storedUser) { navigate('/login'); return; }
-        const user = JSON.parse(storedUser);
-        api.post(`/api/cart/${user.id}/items?productId=${product.id}&quantity=1`)
-            .then(() => alert(`${product.name} sepete eklendi!`))
-            .catch(err => alert('Hata: ' + err.response?.data?.message));
     };
 
     return (
@@ -191,7 +182,7 @@ function Products() {
                     }
                     description={
                         searchKeyword
-                            ? 'Farklı bir arama terimi deneyin veya filtreleri temizleyin.'
+                            ? 'Farklı bir arama terimi deneyin.'
                             : 'Daha sonra tekrar kontrol edin.'
                     }
                     buttonText={searchKeyword || selectedCategory ? 'Tüm Ürünlere Dön' : null}
@@ -203,7 +194,15 @@ function Products() {
                 />
 
             ) : (
-                <Grid templateColumns="repeat(auto-fill, minmax(220px, 1fr))" gap={6}>
+                <Grid
+                    templateColumns={{
+                        base: '1fr',
+                        sm: 'repeat(2, 1fr)',
+                        md: 'repeat(3, 1fr)',
+                        lg: 'repeat(4, 1fr)'
+                    }}
+                    gap={6}
+                >
                     {products.map(product => (
                         <ProductCard
                             key={product.id}

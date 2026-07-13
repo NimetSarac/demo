@@ -1,8 +1,8 @@
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import {
     Box, Heading, Text, Button, HStack, VStack,
-    Image, Badge, Divider, Flex, Spinner,
-    Center, Alert, AlertIcon
+    Divider, Flex, Spinner, Center, Alert, AlertIcon,
+    Badge, Link
 } from '@chakra-ui/react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -18,18 +18,6 @@ function Cart() {
     } = useCart();
 
     const navigate = useNavigate();
-
-    if (!user) {
-        return (
-            <EmptyState
-                icon="🔒"
-                title="Giriş yapmanız gerekiyor"
-                description="Sepetinizi görüntülemek için lütfen giriş yapın."
-                buttonText="Giriş Yap"
-                onButtonClick={() => navigate('/login')}
-            />
-        );
-    }
 
     if (loading) {
         return (
@@ -86,6 +74,18 @@ function Cart() {
                 </Badge>
             </Heading>
 
+            {/* Giriş yapılmamış kullanıcıya uyarı */}
+            {!user && cartItems.length > 0 && (
+                <Alert status="info" mb={4} borderRadius="md">
+                    <AlertIcon />
+                    Sepetiniz geçici olarak kaydedildi.{' '}
+                    <Link as={RouterLink} to="/login" color="blue.600" ml={1} fontWeight="bold">
+                        Giriş yapın
+                    </Link>
+                    {' '}ve alışverişinizi tamamlayın.
+                </Alert>
+            )}
+
             <Flex gap={6} direction={{ base: 'column', lg: 'row' }}>
 
                 {/* Sol — Ürün listesi */}
@@ -104,15 +104,15 @@ function Cart() {
                     </Flex>
 
                     <VStack spacing={4} align="stretch">
-                        {cartItems.map(item => (
+                        {cartItems.map((item, index) => (
                             <Box
-                                key={item.id}
+                                key={item.id || item.productId || index}
                                 bg="white"
                                 borderRadius="xl"
                                 boxShadow="sm"
                                 p={4}
                             >
-                                <Flex gap={4} align="center">
+                                <Flex gap={4} align="center" flexWrap={{ base: 'wrap', md: 'nowrap' }}>
 
                                     {/* Ürün resmi */}
                                     <Box
@@ -132,10 +132,10 @@ function Cart() {
                                     {/* Ürün bilgileri */}
                                     <Box flex={1}>
                                         <Text fontWeight="bold" fontSize="md" mb={1}>
-                                            {item.productName}
+                                            {item.productName || `Ürün #${item.productId}`}
                                         </Text>
                                         <Text fontSize="lg" fontWeight="bold" color="red.500">
-                                            {item.productPrice?.toLocaleString('tr-TR')} ₺
+                                            {(item.productPrice || 0).toLocaleString('tr-TR')} ₺
                                         </Text>
                                     </Box>
 
@@ -144,7 +144,10 @@ function Cart() {
                                         <Button
                                             size="sm"
                                             variant="outline"
-                                            onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
+                                            onClick={() => handleUpdateQuantity(
+                                                item.id || item.productId,
+                                                item.quantity - 1
+                                            )}
                                             isDisabled={item.quantity <= 1}
                                             w="32px"
                                             h="32px"
@@ -162,7 +165,10 @@ function Cart() {
                                         <Button
                                             size="sm"
                                             variant="outline"
-                                            onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
+                                            onClick={() => handleUpdateQuantity(
+                                                item.id || item.productId,
+                                                item.quantity + 1
+                                            )}
                                             w="32px"
                                             h="32px"
                                             p={0}
@@ -178,7 +184,7 @@ function Cart() {
                                         minW="80px"
                                         textAlign="right"
                                     >
-                                        {(item.productPrice * item.quantity)?.toLocaleString('tr-TR')} ₺
+                                        {((item.productPrice || 0) * item.quantity).toLocaleString('tr-TR')} ₺
                                     </Text>
 
                                     {/* Sil butonu */}
@@ -186,7 +192,7 @@ function Cart() {
                                         size="sm"
                                         colorScheme="red"
                                         variant="ghost"
-                                        onClick={() => handleRemoveItem(item.id)}
+                                        onClick={() => handleRemoveItem(item.id || item.productId)}
                                         p={1}
                                     >
                                         🗑️
@@ -259,9 +265,15 @@ function Cart() {
                             size="lg"
                             mt={6}
                             _hover={{ bg: '#1565c0' }}
-                            onClick={() => navigate('/checkout')}
+                            onClick={() => {
+                                if (!user) {
+                                    navigate('/login');
+                                } else {
+                                    navigate('/checkout');
+                                }
+                            }}
                         >
-                            Siparişi Tamamla →
+                            {user ? 'Siparişi Tamamla →' : 'Giriş Yap ve Devam Et →'}
                         </Button>
 
                         {/* Alışverişe devam et */}

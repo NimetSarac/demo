@@ -5,25 +5,13 @@ import {
     Link, HStack
 } from '@chakra-ui/react';
 import { useAuth } from '../../context/AuthContext';
-import api from '../../services/api';
 import { useCart } from '../../context/CartContext';
 
 function Navbar() {
 
-      const { user, logout, isAdmin } = useAuth();
-    const { cartCount, setCartCount } = useCart();
+    const { user, logout, isAdmin } = useAuth();
+    const { cartCount } = useCart();
     const navigate = useNavigate();
-
-    useEffect(() => {
-        if (user) {
-            api.get(`/api/cart/${user.id}`)
-                .then(res => {
-                    const items = res.data.data.items;
-                    setCartCount(items ? items.length : 0);
-                })
-                .catch(() => setCartCount(0));
-        }
-    }, [user]);
 
     const handleLogout = async () => {
         await logout();
@@ -47,7 +35,7 @@ function Navbar() {
                     <Link as={RouterLink} to="/products" color="white" _hover={{ color: 'blue.200' }}>
                         Ürünler
                     </Link>
-                    {isAdmin() && (
+                    {isAdmin && isAdmin() && (
                         <Link as={RouterLink} to="/admin" color="yellow.300" _hover={{ color: 'yellow.100' }}>
                             Admin Panel
                         </Link>
@@ -57,7 +45,7 @@ function Navbar() {
                 {/* Sağ taraf */}
                 <HStack spacing={4}>
 
-                    {/* Sepet — sadece giriş yapılmışsa */}
+                    {/* Sepet ikonu — sadece giriş yapılmışsa */}
                     {user && (
                         <Box position="relative">
                             <Link as={RouterLink} to="/cart" color="white" fontSize="xl">
@@ -71,8 +59,13 @@ function Navbar() {
                                     right="-8px"
                                     borderRadius="full"
                                     fontSize="10px"
+                                    minW="18px"
+                                    h="18px"
+                                    display="flex"
+                                    alignItems="center"
+                                    justifyContent="center"
                                 >
-                                    {cartCount}
+                                    {cartCount > 99 ? '99+' : cartCount}
                                 </Badge>
                             )}
                         </Box>

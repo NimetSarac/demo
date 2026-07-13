@@ -1,21 +1,18 @@
 import { useState } from 'react';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
-import {
-    Box, Button, Input, Heading,
-    Text, VStack, Link, useToast
-} from '@chakra-ui/react';
+import { Box, Button, Input, Heading, Text, VStack, Link, useToast } from '@chakra-ui/react';
 import api from '../services/api';
 import { showToast } from '../services/toastHelper';
 import { useAuth } from '../context/AuthContext';
 
 function Login() {
 
-    const { login } = useAuth();
     const [form, setForm] = useState({ email: '', password: '' });
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
     const toast = useToast();
+    const { login } = useAuth();
 
     const handleChange = (e) => {
         setForm({ ...form, [e.target.name]: e.target.value });
@@ -41,11 +38,9 @@ function Login() {
         const validationErrors = validate();
         if (Object.keys(validationErrors).length > 0) {
             setErrors(validationErrors);
-
-            // Validation hatalarını toast ile göster
             showToast(toast, {
                 title: 'Form Hatası',
-                description: 'Lütfen tüm alanları doğru doldurun.',
+                description: 'Lütfen tüm alanları doldurun.',
                 status: 'warning'
             });
             return;
@@ -57,19 +52,21 @@ function Login() {
             const response = await api.post(
                 `/api/auth/login?email=${form.email}&password=${form.password}`
             );
-            localStorage.setItem('user', JSON.stringify(response.data.data));
-            const data = response.data.data;
 
-            // Başarı toast'u
+            const data = response.data.data;
+            console.log('Login response:', data);
+
+            login(data, data.token);
+
             showToast(toast, {
                 title: 'Giriş Başarılı',
-                description: `Hoşgeldiniz!, ${data.username}!`,
+                description: 'Hoşgeldiniz!',
                 status: 'success'
             });
 
             navigate('/');
+
         } catch (err) {
-            // Hata toast'u
             showToast(toast, {
                 title: 'Giriş Başarısız',
                 description: err.response?.status === 401
@@ -88,7 +85,6 @@ function Login() {
 
             <form onSubmit={handleSubmit}>
                 <VStack spacing={4}>
-
                     <Box width="100%">
                         <Text mb={1} fontWeight="medium">E-posta *</Text>
                         <Input

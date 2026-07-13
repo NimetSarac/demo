@@ -28,35 +28,29 @@ function Register() {
 
     const validate = () => {
         const newErrors = {};
-
         if (!form.username.trim()) {
             newErrors.username = 'Kullanıcı adı zorunludur';
         } else if (form.username.length < 3) {
             newErrors.username = 'Kullanıcı adı en az 3 karakter olmalıdır';
         }
-
         if (!form.fullname.trim()) {
             newErrors.fullname = 'Ad soyad zorunludur';
         }
-
         if (!form.email.trim()) {
             newErrors.email = 'E-posta zorunludur';
         } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
             newErrors.email = 'Geçerli bir e-posta adresi giriniz';
         }
-
         if (!form.password) {
             newErrors.password = 'Şifre zorunludur';
         } else if (form.password.length < 6) {
             newErrors.password = 'Şifre en az 6 karakter olmalıdır';
         }
-
         if (!form.confirmPassword) {
             newErrors.confirmPassword = 'Şifre tekrarı zorunludur';
         } else if (form.password !== form.confirmPassword) {
             newErrors.confirmPassword = 'Şifreler eşleşmiyor';
         }
-
         return newErrors;
     };
 
@@ -87,7 +81,8 @@ function Register() {
                 status: 'success'
             });
 
-            setTimeout(() => navigate('/login'), 2000);
+            // 2 saniye bekle sonra login'e yönlendir
+             navigate('/login');
 
         } catch (err) {
             showToast(toast, {
