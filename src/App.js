@@ -13,53 +13,67 @@ import Checkout from './pages/Checkout';
 import OrderHistory from './pages/admin/Orders';
 import Returns from './pages/Returns';
 import Dashboard from './pages/admin/Dashboard';
+import AdminUsers from './pages/admin/AdminUsers';
+import AdminOrders from './pages/admin/AdminOrders';
+import AdminReturns from './pages/admin/AdminReturns';
+import AdminProducts from './pages/admin/Products';
+import Categories from './pages/admin/Categories';
 
 function App() {
-    return (
-        <BrowserRouter>
-            <Routes>
-                {/* Normal sayfalar */}
-                <Route path="/" element={<Layout><Home /></Layout>} />
-                <Route path="/login" element={<Layout><Login /></Layout>} />
-                <Route path="/register" element={<Layout><Register /></Layout>} />
-                <Route path="/products" element={<Layout><Products /></Layout>} />
+  return (
+    <BrowserRouter>
+      <Routes>
+        {/* Normal sayfalar */}
+        <Route path="/" element={<Layout><Home /></Layout>} />
+        <Route path="/login" element={<Layout><Login /></Layout>} />
+        <Route path="/register" element={<Layout><Register /></Layout>} />
+        <Route path="/products" element={<Layout><Products /></Layout>} />
 
-                {/* Giriş gerektiren sayfalar */}
-                <Route path="/profile" element={
-                    <Layout><PrivateRoute><Profile /></PrivateRoute></Layout>
-                } />
-                <Route path="/cart" element={
-                    <Layout><PrivateRoute><Cart /></PrivateRoute></Layout>
-                } />
-                <Route path="/checkout" element={
-                    <Layout><PrivateRoute><Checkout /></PrivateRoute></Layout>
-                } />
-                <Route path="/orders" element={
-                    <Layout><PrivateRoute><OrderHistory /></PrivateRoute></Layout>
-                } />
-                <Route path="/returns" element={
-                    <Layout><PrivateRoute><Returns /></PrivateRoute></Layout>
-                } />
+        {/* Giriş gerektiren sayfalar */}
+        <Route path="/profile" element={
+          <Layout><PrivateRoute><Profile /></PrivateRoute></Layout>
+        } />
+        <Route path="/cart" element={
+          <Layout><PrivateRoute><Cart /></PrivateRoute></Layout>
+        } />
+        <Route path="/checkout" element={
+          <Layout><PrivateRoute><Checkout /></PrivateRoute></Layout>
+        } />
+        <Route path="/orders" element={
+          <Layout><PrivateRoute><OrderHistory /></PrivateRoute></Layout>
+        } />
+        <Route path="/returns" element={
+          <Layout><PrivateRoute><Returns /></PrivateRoute></Layout>
+        } />
 
-                {/* Admin sayfalar */}
-                <Route path="/admin" element={
-                    <AdminRoute><AdminLayout><Dashboard /></AdminLayout></AdminRoute>
-                } />
-                <Route path="/admin/categories" element={
-                    <AdminRoute><AdminLayout><div>Kategoriler</div></AdminLayout></AdminRoute>
-                } />
-                <Route path="/admin/products" element={
-                    <AdminRoute><AdminLayout><div>Ürünler</div></AdminLayout></AdminRoute>
-                } />
-                <Route path="/admin/users" element={
-                    <AdminRoute><AdminLayout><div>Kullanıcılar</div></AdminLayout></AdminRoute>
-                } />
-                <Route path="/admin/orders" element={
-                    <AdminRoute><AdminLayout><div>Siparişler</div></AdminLayout></AdminRoute>
-                } />
-            </Routes>
-        </BrowserRouter>
-    );
+        {/* Admin sayfalar */}
+        <Route path="/admin" element={
+          <AdminRoute><AdminLayout><Dashboard /></AdminLayout></AdminRoute>
+        } />
+        <Route path="/admin/categories" element={
+          <AdminRoute><AdminLayout><Categories /></AdminLayout></AdminRoute>
+        } />
+        <Route path="/admin/users" element={
+          <AdminRoute><AdminLayout><AdminUsers /></AdminLayout></AdminRoute>
+        } />
+        <Route path="/admin/orders" element={
+          <AdminRoute><AdminLayout><AdminOrders /></AdminLayout></AdminRoute>
+        } />
+        <Route path="/admin/returns" element={
+          <AdminRoute><AdminLayout><AdminReturns /></AdminLayout></AdminRoute>
+        } />
+        <Route path="/admin/products" element={
+          <AdminRoute><AdminLayout><AdminProducts /></AdminLayout></AdminRoute>
+        } />
+        <Route path="/admin/users" element={
+          <AdminRoute><AdminLayout><div>Kullanıcılar</div></AdminLayout></AdminRoute>
+        } />
+        <Route path="/admin/orders" element={
+          <AdminRoute><AdminLayout><div>Siparişler</div></AdminLayout></AdminRoute>
+        } />
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
 export default App;

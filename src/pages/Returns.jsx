@@ -45,17 +45,16 @@ function Returns() {
             return;
         }
         fetchOrders();
-        // Gerçek projede iade listesi de backend'den gelir
         // Şimdilik localStorage'da tutuyoruz
         const savedReturns = JSON.parse(localStorage.getItem(`returns_${user.id}`) || '[]');
         setReturns(savedReturns);
     }, [user]);
 
+    // fetchOrders içinde - sadece tamamlanmış siparişleri getir
     const fetchOrders = async () => {
         try {
             const res = await api.get(`/api/orders/user/${user.id}`);
-            // Sadece tamamlanmış siparişler iade edilebilir
-            const completed = (res.data.data || []).filter(o => o.orderStatus);
+            const completed = (res.data.data || []).filter(o => o.orderStatus === true);
             setOrders(completed);
         } catch (err) {
             console.error(err);
