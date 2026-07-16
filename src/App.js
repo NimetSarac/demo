@@ -18,6 +18,9 @@ import AdminOrders from './pages/admin/AdminOrders';
 import AdminReturns from './pages/admin/AdminReturns';
 import AdminProducts from './pages/admin/Products';
 import Categories from './pages/admin/Categories';
+import ProductDetail from "./pages/ProductDetail";
+import Favorites from './pages/Favorites';
+
 
 function App() {
   return (
@@ -45,6 +48,10 @@ function App() {
         <Route path="/returns" element={
           <Layout><PrivateRoute><Returns /></PrivateRoute></Layout>
         } />
+        <Route path="/favorites" element={
+          <Layout><PrivateRoute><Favorites /></PrivateRoute></Layout>
+        } />
+
 
         {/* Admin sayfalar */}
         <Route path="/admin" element={
@@ -70,6 +77,10 @@ function App() {
         } />
         <Route path="/admin/orders" element={
           <AdminRoute><AdminLayout><div>Siparişler</div></AdminLayout></AdminRoute>
+        } />
+        import ProductDetail from './pages/ProductDetail';
+
+        <Route path="/products/:id" element={<Layout><ProductDetail /></Layout>
         } />
       </Routes>
     </BrowserRouter>

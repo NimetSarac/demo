@@ -1,17 +1,19 @@
 import {
     Box, Text, Badge, Button, HStack,
-    VStack, Image, Tooltip, IconButton
+    VStack, Image, Tooltip
 } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@chakra-ui/react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { showToast } from '../services/toastHelper';
+import { useFavorite } from '../context/FavoriteContext';
 
 function ProductCard({ product }) {
 
     const { addToCart } = useCart();
     const { user } = useAuth();
+    const { isFavorite, addFavorite, removeFavorite } = useFavorite();
     const navigate = useNavigate();
     const toast = useToast();
 
@@ -19,7 +21,8 @@ function ProductCard({ product }) {
         ? product.price - (product.price * product.discount / 100)
         : null;
 
-    const handleAddToCart = async () => {
+    const handleAddToCart = async (e) => {
+        e.stopPropagation(); // Kart tıklamasını engelle
         if (!user) {
             navigate('/login');
             return;
@@ -40,6 +43,25 @@ function ProductCard({ product }) {
         }
     };
 
+    const handleFavorite = async (e) => {
+        e.stopPropagation(); // Kart tıklamasını engelle
+        if (!user) {
+            navigate('/login');
+            return;
+        }
+        try {
+            if (isFavorite(product.id)) {
+                await removeFavorite(product.id);
+                showToast(toast, { title: 'Favorilerden çıkarıldı', status: 'info' });
+            } else {
+                await addFavorite(product.id);
+                showToast(toast, { title: 'Favorilere eklendi', status: 'success' });
+            }
+        } catch (err) {
+            showToast(toast, { title: 'Hata', status: 'error' });
+        }
+    };
+
     return (
         <Box
             bg="white"
@@ -53,6 +75,8 @@ function ProductCard({ product }) {
             h="100%"
             position="relative"
             role="group"
+            cursor="pointer"
+            onClick={() => navigate(`/products/${product.id}`)}
         >
             {/* Ürün Resmi */}
             <Box
@@ -97,28 +121,30 @@ function ProductCard({ product }) {
                     </Badge>
                 )}
 
-                {/* Sepete ekle ikonu — sağ üst (hover'da görünür) */}
-                {product.stock > 0 && (
-                    <IconButton
-                        position="absolute"
-                        top={2}
-                        right={2}
-                        size="sm"
-                        bg="white"
-                        color="#0d47a1"
-                        boxShadow="md"
-                        borderRadius="full"
-                        opacity={0}
-                        _groupHover={{ opacity: 1 }}
-                        transition="opacity 0.2s"
-                        icon={<Text fontSize="16px">🛒</Text>}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            handleAddToCart();
-                        }}
-                        aria-label="Sepete ekle"
-                    />
-                )}
+                {/* Favori butonu — sağ üst */}
+                <Box
+                    position="absolute"
+                    top={2}
+                    right={2}
+                    zIndex={1}
+                    onClick={handleFavorite}
+                    cursor="pointer"
+                    bg="white"
+                    borderRadius="full"
+                    w="32px"
+                    h="32px"
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="center"
+                    boxShadow="md"
+                    opacity={isFavorite(product.id) ? 1 : 0}
+                    _groupHover={{ opacity: 1 }}
+                    transition="opacity 0.2s"
+                >
+                    <Text fontSize="16px">
+                        {isFavorite(product.id) ? '❤️' : '🤍'}
+                    </Text>
+                </Box>
 
                 {/* Stokta yok overlay */}
                 {product.stock === 0 && (
@@ -184,9 +210,6 @@ function ProductCard({ product }) {
                                         maximumFractionDigits: 2
                                     })} ₺
                                 </Text>
-                                <Badge colorScheme="red" fontSize="xs">
-                                    %{product.discount} İndirim
-                                </Badge>
                             </HStack>
                         </VStack>
                     ) : (

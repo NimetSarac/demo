@@ -31,11 +31,11 @@ function Dashboard() {
                 try {
                     const orderRes = await api.get(`/api/orders/user/${user.id}`);
                     totalOrders += (orderRes.data.data || []).length;
-                } catch (err) {}
+                } catch (err) { }
             }
 
             setStats({
-                products: (productsRes.data.data || []).length,
+                products: (productsRes.data.data || productsRes.data || []).length,
                 categories: (categoriesRes.data.data || []).length,
                 users: allUsers.length,
                 orders: totalOrders

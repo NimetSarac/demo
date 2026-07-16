@@ -35,6 +35,12 @@ function Navbar() {
                     <Link as={RouterLink} to="/products" color="white" _hover={{ color: 'blue.200' }}>
                         Ürünler
                     </Link>
+                    {user && (
+                        <Link as={RouterLink} to="/favorites" color="white" _hover={{ color: 'blue.200' }}>
+                            ❤️ Favoriler
+                        </Link>
+                    )}
+
                     {isAdmin && isAdmin() && (
                         <Link as={RouterLink} to="/admin" color="yellow.300" _hover={{ color: 'yellow.100' }}>
                             Admin Panel

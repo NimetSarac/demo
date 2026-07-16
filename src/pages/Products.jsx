@@ -17,6 +17,8 @@ function Products() {
     const [loading, setLoading] = useState(true);
     const [selectedCategoryName, setSelectedCategoryName] = useState('');
     const [searchKeyword, setSearchKeyword] = useState('');
+    const [minPrice, setMinPrice] = useState('');
+    const [maxPrice, setMaxPrice] = useState('');
     const [currentPage, setCurrentPage] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
     const [totalElements, setTotalElements] = useState(0);
@@ -31,7 +33,6 @@ function Products() {
             .then(res => {
                 const cats = res.data.data || [];
                 setCategories(cats);
-
                 if (selectedCategory) {
                     const cat = cats.find(c => c.id === Number(selectedCategory));
                     setSelectedCategoryName(cat ? cat.name : '');
@@ -45,7 +46,24 @@ function Products() {
     useEffect(() => {
         setLoading(true);
 
-        if (searchKeyword) {
+        // Fiyat filtresi aktifse
+        if (minPrice || maxPrice) {
+            const min = minPrice ? Number(minPrice) : 0;
+            const max = maxPrice ? Number(maxPrice) : 999999;
+            let url = `/api/products/filter?minPrice=${min}&maxPrice=${max}`;
+            if (selectedCategory) url += `&categoryId=${Number(selectedCategory)}`;
+
+            api.get(url)
+                .then(res => {
+                    const data = res.data.data || res.data || [];
+                    setProducts(Array.isArray(data) ? data : []);
+                    setTotalPages(1);
+                    setTotalElements(Array.isArray(data) ? data.length : 0);
+                    setLoading(false);
+                })
+                .catch(() => setLoading(false));
+
+        } else if (searchKeyword) {
             api.get(`/api/products/search?keyword=${searchKeyword}`)
                 .then(res => {
                     setProducts(res.data.data || []);
@@ -58,7 +76,6 @@ function Products() {
         } else if (selectedCategory) {
             api.get(`/api/products/category/${Number(selectedCategory)}`)
                 .then(res => {
-                    // res.data.data değil, res.data — backend ApiResponse sarmıyor
                     const data = res.data.data || res.data || [];
                     setProducts(Array.isArray(data) ? data : []);
                     setTotalPages(1);
@@ -66,6 +83,7 @@ function Products() {
                     setLoading(false);
                 })
                 .catch(() => setLoading(false));
+
         } else {
             api.get(`/api/products/paged?page=${currentPage}&size=${pageSize}&sort=id,desc`)
                 .then(res => {
@@ -77,7 +95,7 @@ function Products() {
                 .catch(() => setLoading(false));
         }
 
-    }, [currentPage, selectedCategory, searchKeyword]);
+    }, [currentPage, selectedCategory, searchKeyword, minPrice, maxPrice]);
 
     const handleCategoryChange = (categoryId) => {
         if (categoryId) {
@@ -87,6 +105,8 @@ function Products() {
         }
         setCurrentPage(0);
         setSearchKeyword('');
+        setMinPrice('');
+        setMaxPrice('');
     };
 
     return (
@@ -118,16 +138,17 @@ function Products() {
 
             {/* Filtreler */}
             <HStack mb={6} spacing={4} flexWrap="wrap">
+
+                {/* Arama */}
                 <Input
                     placeholder="Ürün ara..."
                     value={searchKeyword}
-                    onChange={e => {
-                        setSearchKeyword(e.target.value);
-                        setCurrentPage(0);
-                    }}
+                    onChange={e => { setSearchKeyword(e.target.value); setCurrentPage(0); }}
                     maxW="200px"
                     bg="white"
                 />
+
+                {/* Kategori */}
                 <Select
                     value={selectedCategory}
                     onChange={e => handleCategoryChange(e.target.value)}
@@ -139,13 +160,40 @@ function Products() {
                         <option key={cat.id} value={cat.id}>{cat.name}</option>
                     ))}
                 </Select>
-                {(searchKeyword || selectedCategory) && (
+
+                {/* Fiyat filtresi */}
+                <HStack spacing={2}>
+                    <Input
+                        placeholder="Min ₺"
+                        value={minPrice}
+                        onChange={e => { setMinPrice(e.target.value); setCurrentPage(0); }}
+                        maxW="100px"
+                        bg="white"
+                        type="number"
+                        min={0}
+                    />
+                    <Text color="gray.500">—</Text>
+                    <Input
+                        placeholder="Max ₺"
+                        value={maxPrice}
+                        onChange={e => { setMaxPrice(e.target.value); setCurrentPage(0); }}
+                        maxW="100px"
+                        bg="white"
+                        type="number"
+                        min={0}
+                    />
+                </HStack>
+
+                {/* Filtreleri temizle */}
+                {(searchKeyword || selectedCategory || minPrice || maxPrice) && (
                     <Button
                         size="sm"
                         variant="outline"
                         onClick={() => {
                             setSearchKeyword('');
                             setSearchParams({});
+                            setMinPrice('');
+                            setMaxPrice('');
                             setCurrentPage(0);
                         }}
                     >
@@ -172,23 +220,23 @@ function Products() {
 
             ) : products.length === 0 ? (
                 <EmptyState
-                    icon={searchKeyword ? '🔍' : selectedCategory ? '📦' : '🛍️'}
+                    icon={searchKeyword ? '🔍' : selectedCategory ? '📦' : minPrice || maxPrice ? '💰' : '🛍️'}
                     title={
                         searchKeyword
                             ? `"${searchKeyword}" için sonuç bulunamadı`
                             : selectedCategory
-                                ? 'Bu kategoride ürün bulunamadı'
-                                : 'Henüz ürün eklenmemiş'
+                            ? 'Bu kategoride ürün bulunamadı'
+                            : minPrice || maxPrice
+                            ? 'Bu fiyat aralığında ürün bulunamadı'
+                            : 'Henüz ürün eklenmemiş'
                     }
-                    description={
-                        searchKeyword
-                            ? 'Farklı bir arama terimi deneyin.'
-                            : 'Daha sonra tekrar kontrol edin.'
-                    }
-                    buttonText={searchKeyword || selectedCategory ? 'Tüm Ürünlere Dön' : null}
+                    description="Farklı filtreler deneyin."
+                    buttonText={searchKeyword || selectedCategory || minPrice || maxPrice ? 'Filtreleri Temizle' : null}
                     onButtonClick={() => {
                         setSearchKeyword('');
                         setSearchParams({});
+                        setMinPrice('');
+                        setMaxPrice('');
                         setCurrentPage(0);
                     }}
                 />
@@ -213,7 +261,7 @@ function Products() {
             )}
 
             {/* Pagination */}
-            {totalPages > 1 && !searchKeyword && !selectedCategory && (
+            {totalPages > 1 && !searchKeyword && !selectedCategory && !minPrice && !maxPrice && (
                 <HStack justify="center" mt={10} spacing={2}>
                     <Button
                         size="sm"

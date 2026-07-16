@@ -33,6 +33,7 @@ function AdminProducts() {
     const [deleteId, setDeleteId] = useState(null);
     const [searchKeyword, setSearchKeyword] = useState('');
 
+
     const { isOpen: isFormOpen, onOpen: onFormOpen, onClose: onFormClose } = useDisclosure();
     const { isOpen: isDeleteOpen, onOpen: onDeleteOpen, onClose: onDeleteClose } = useDisclosure();
     const cancelRef = useRef();
@@ -48,7 +49,13 @@ function AdminProducts() {
                 api.get('/api/products'),
                 api.get('/api/categories')
             ]);
-            setProducts(productsRes.data.data || []);
+
+            console.log('Products response:', productsRes.data);
+
+            // ApiResponse formatı: data.data
+            // Direkt array: data
+            const productsData = productsRes.data.data || productsRes.data || [];
+            setProducts(Array.isArray(productsData) ? productsData : []);
             setCategories(categoriesRes.data.data || []);
         } catch (err) {
             console.error(err);
@@ -56,7 +63,6 @@ function AdminProducts() {
             setLoading(false);
         }
     };
-
     const handleAdd = () => {
         setSelectedProduct(null);
         setForm(emptyForm);
@@ -155,6 +161,7 @@ function AdminProducts() {
     const filteredProducts = products.filter(p =>
         (p.name || '').toLowerCase().includes(searchKeyword.toLowerCase())
     );
+   
 
     if (loading) return <Center py={20}><Spinner size="xl" color="blue.500" /></Center>;
 
@@ -219,8 +226,8 @@ function AdminProducts() {
                                         <Td isNumeric>
                                             <Badge colorScheme={
                                                 product.stock > 5 ? 'green'
-                                                : product.stock > 0 ? 'orange'
-                                                : 'red'
+                                                    : product.stock > 0 ? 'orange'
+                                                        : 'red'
                                             }>
                                                 {product.stock}
                                             </Badge>
@@ -301,6 +308,14 @@ function AdminProducts() {
                                             <option key={cat.id} value={cat.id}>{cat.name}</option>
                                         ))}
                                     </Select>
+                                </Box>
+                                <Box width="100%">
+                                    <Text mb={1} fontWeight="medium" fontSize="sm">Açıklama</Text>
+                                    <Input
+                                        value={form.description}
+                                        onChange={e => setForm({ ...form, description: e.target.value })}
+                                        placeholder="Ürün açıklaması girin"
+                                    />
                                 </Box>
                             </HStack>
                             <Flex width="100%" align="center" justify="space-between">
