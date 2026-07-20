@@ -20,7 +20,7 @@ import AdminProducts from './pages/admin/Products';
 import Categories from './pages/admin/Categories';
 import ProductDetail from "./pages/ProductDetail";
 import Favorites from './pages/Favorites';
-
+import ForgotPassword from './pages/ForgotPassword';
 
 function App() {
   return (
@@ -31,7 +31,7 @@ function App() {
         <Route path="/login" element={<Layout><Login /></Layout>} />
         <Route path="/register" element={<Layout><Register /></Layout>} />
         <Route path="/products" element={<Layout><Products /></Layout>} />
-
+        <Route path="/forgot-password" element={<Layout><ForgotPassword /></Layout>} />
         {/* Giriş gerektiren sayfalar */}
         <Route path="/profile" element={
           <Layout><PrivateRoute><Profile /></PrivateRoute></Layout>

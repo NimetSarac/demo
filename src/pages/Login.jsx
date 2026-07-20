@@ -128,6 +128,11 @@ function Login() {
                     </Button>
                 </VStack>
             </form>
+            <Text mt={4} textAlign="center" fontSize="sm">
+                <Link as={RouterLink} to="/forgot-password" color="blue.600">
+                    Şifremi Unuttum
+                </Link>
+            </Text>
 
             <Text mt={4} textAlign="center" fontSize="sm">
                 Hesabın yok mu?{' '}
