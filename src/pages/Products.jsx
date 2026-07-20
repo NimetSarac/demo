@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams, Link as RouterLink } from 'react-router-dom';
 import {
     Box, Grid, Heading, Text, Button, Input,
@@ -9,6 +9,7 @@ import api from '../services/api';
 import ProductSkeleton from '../components/ProductSkeleton';
 import EmptyState from '../components/EmptyState';
 import ProductCard from '../components/ProductCard';
+import { useSearchHistory } from '../hooks/useSearchHistory';
 
 function Products() {
 
@@ -22,11 +23,14 @@ function Products() {
     const [currentPage, setCurrentPage] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
     const [totalElements, setTotalElements] = useState(0);
+    const [showSuggestions, setShowSuggestions] = useState(false);
+    const [suggestions, setSuggestions] = useState([]);
     const pageSize = 6;
 
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
     const selectedCategory = searchParams.get('category') || '';
+    const { history, addToHistory, removeFromHistory, clearHistory } = useSearchHistory();
 
     useEffect(() => {
         api.get('/api/categories')
@@ -46,7 +50,6 @@ function Products() {
     useEffect(() => {
         setLoading(true);
 
-        // Fiyat filtresi aktifse
         if (minPrice || maxPrice) {
             const min = minPrice ? Number(minPrice) : 0;
             const max = maxPrice ? Number(maxPrice) : 999999;
@@ -66,9 +69,10 @@ function Products() {
         } else if (searchKeyword) {
             api.get(`/api/products/search?keyword=${searchKeyword}`)
                 .then(res => {
-                    setProducts(res.data.data || []);
+                    const data = res.data.data || res.data || [];
+                    setProducts(Array.isArray(data) ? data : []);
                     setTotalPages(1);
-                    setTotalElements((res.data.data || []).length);
+                    setTotalElements(Array.isArray(data) ? data.length : 0);
                     setLoading(false);
                 })
                 .catch(() => setLoading(false));
@@ -97,6 +101,20 @@ function Products() {
 
     }, [currentPage, selectedCategory, searchKeyword, minPrice, maxPrice]);
 
+    useEffect(() => {
+        if (searchKeyword.length >= 1) {
+            const matched = products
+                .filter(p => p.name?.toLowerCase().includes(searchKeyword.toLowerCase()))
+                .map(p => p.name)
+                .slice(0, 5);
+            setSuggestions(matched);
+            setShowSuggestions(true);
+        } else {
+            setSuggestions([]);
+            setShowSuggestions(history.length > 0);
+        }
+    }, [searchKeyword, products, history]);
+
     const handleCategoryChange = (categoryId) => {
         if (categoryId) {
             setSearchParams({ category: categoryId });
@@ -107,6 +125,20 @@ function Products() {
         setSearchKeyword('');
         setMinPrice('');
         setMaxPrice('');
+    };
+
+    const handleSearchSelect = (keyword) => {
+        setSearchKeyword(keyword);
+        addToHistory(keyword);
+        setShowSuggestions(false);
+        setCurrentPage(0);
+    };
+
+    const handleSearchSubmit = () => {
+        if (searchKeyword.trim()) {
+            addToHistory(searchKeyword);
+            setShowSuggestions(false);
+        }
     };
 
     return (
@@ -137,16 +169,104 @@ function Products() {
             </Flex>
 
             {/* Filtreler */}
-            <HStack mb={6} spacing={4} flexWrap="wrap">
+            <HStack mb={6} spacing={4} flexWrap="wrap" align="flex-start">
 
                 {/* Arama */}
-                <Input
-                    placeholder="Ürün ara..."
-                    value={searchKeyword}
-                    onChange={e => { setSearchKeyword(e.target.value); setCurrentPage(0); }}
-                    maxW="200px"
-                    bg="white"
-                />
+                <Box position="relative">
+                    <Input
+                        placeholder="Ürün ara..."
+                        value={searchKeyword}
+                        onChange={e => {
+                            setSearchKeyword(e.target.value);
+                            setCurrentPage(0);
+                        }}
+                        onFocus={() => setShowSuggestions(true)}
+                        onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                        onKeyDown={e => e.key === 'Enter' && handleSearchSubmit()}
+                        w="250px"
+                        bg="white"
+                    />
+
+                    {/* Dropdown */}
+                    {showSuggestions && (history.length > 0 || suggestions.length > 0) && (
+                        <Box
+                            position="absolute"
+                            top="40px"
+                            left={0}
+                            bg="white"
+                            borderRadius="md"
+                            boxShadow="lg"
+                            zIndex={999}
+                            border="1px solid"
+                            borderColor="gray.200"
+                            w="250px"
+                        >
+                            {/* Geçmiş */}
+                            {searchKeyword === '' && history.length > 0 && (
+                                <Box>
+                                    <Flex justify="space-between" align="center" px={3} py={2}>
+                                        <Text fontSize="xs" color="gray.500" fontWeight="bold">
+                                            SON ARAMALAR
+                                        </Text>
+                                        <Button size="xs" variant="ghost" color="gray.400" onClick={clearHistory}>
+                                            Temizle
+                                        </Button>
+                                    </Flex>
+                                    {history.map((keyword, index) => (
+                                        <Flex
+                                            key={index}
+                                            px={3} py={2}
+                                            cursor="pointer"
+                                            align="center"
+                                            justify="space-between"
+                                            _hover={{ bg: 'gray.50' }}
+                                            onClick={() => handleSearchSelect(keyword)}
+                                        >
+                                            <HStack>
+                                                <Text fontSize="sm" color="gray.500">🕐</Text>
+                                                <Text fontSize="sm">{keyword}</Text>
+                                            </HStack>
+                                            <Button
+                                                size="xs"
+                                                variant="ghost"
+                                                color="gray.300"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    removeFromHistory(keyword);
+                                                }}
+                                            >
+                                                ✕
+                                            </Button>
+                                        </Flex>
+                                    ))}
+                                </Box>
+                            )}
+
+                            {/* Öneriler */}
+                            {searchKeyword !== '' && suggestions.length > 0 && (
+                                <Box>
+                                    <Text fontSize="xs" color="gray.500" fontWeight="bold" px={3} py={2}>
+                                        ÖNERİLER
+                                    </Text>
+                                    {suggestions.map((suggestion, index) => (
+                                        <Flex
+                                            key={index}
+                                            px={3} py={2}
+                                            cursor="pointer"
+                                            _hover={{ bg: 'gray.50' }}
+                                            onClick={() => handleSearchSelect(suggestion)}
+                                        >
+                                            <HStack>
+                                                <Text fontSize="sm" color="gray.400">🔍</Text>
+                                                <Text fontSize="sm">{suggestion}</Text>
+                                            </HStack>
+                                        </Flex>
+                                    ))}
+                                </Box>
+                            )}
+                        </Box>
+                    )}
+                </Box>
 
                 {/* Kategori */}
                 <Select
@@ -167,7 +287,7 @@ function Products() {
                         placeholder="Min ₺"
                         value={minPrice}
                         onChange={e => { setMinPrice(e.target.value); setCurrentPage(0); }}
-                        maxW="100px"
+                        w="100px"
                         bg="white"
                         type="number"
                         min={0}
@@ -177,14 +297,14 @@ function Products() {
                         placeholder="Max ₺"
                         value={maxPrice}
                         onChange={e => { setMaxPrice(e.target.value); setCurrentPage(0); }}
-                        maxW="100px"
+                        w="100px"
                         bg="white"
                         type="number"
                         min={0}
                     />
                 </HStack>
 
-                {/* Filtreleri temizle */}
+                {/* Temizle */}
                 {(searchKeyword || selectedCategory || minPrice || maxPrice) && (
                     <Button
                         size="sm"

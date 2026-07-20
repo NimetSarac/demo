@@ -55,33 +55,33 @@ function Profile() {
     }, [user]);
     const cancelRef = useRef();
     const handleDeleteAccount = async () => {
-    try {
-        await api.delete(`/api/users/${user.id}`);
-        
-        // localStorage'ı temizle
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        localStorage.removeItem(`returns_${user.id}`);
-        
-        showToast(toast, {
-            title: 'Hesap Silindi',
-            description: 'Hesabınız başarıyla silindi.',
-            status: 'success'
-        });
+        try {
+            await api.delete(`/api/users/${user.id}`);
 
-        await logout();
-        navigate('/');
+            // localStorage'ı temizle
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            localStorage.removeItem(`returns_${user.id}`);
 
-    } catch (err) {
-        showToast(toast, {
-            title: 'Hata',
-            description: 'Hesap silinemedi.',
-            status: 'error'
-        });
-    } finally {
-        onDeleteClose();
-    }
-};
+            showToast(toast, {
+                title: 'Hesap Silindi',
+                description: 'Hesabınız başarıyla silindi.',
+                status: 'success'
+            });
+
+            await logout();
+            navigate('/');
+
+        } catch (err) {
+            showToast(toast, {
+                title: 'Hata',
+                description: 'Hesap silinemedi.',
+                status: 'error'
+            });
+        } finally {
+            onDeleteClose();
+        }
+    };
 
     const fetchProfile = async () => {
         try {
@@ -110,6 +110,15 @@ function Profile() {
         } finally {
             setOrdersLoading(false);
         }
+    };
+
+    const getReturnStatus = (orderId) => {
+        const key = `returns_${user.id}`;
+        const userReturns = JSON.parse(localStorage.getItem(key) || '[]');
+        const ret = userReturns.find(r =>
+            String(r.orderId) === String(orderId)
+        );
+        return ret ? ret.status : null;
     };
 
     const handleChange = (e) => {
@@ -238,7 +247,7 @@ function Profile() {
                                         <Input name="address" value={form.address}
                                             onChange={handleChange} placeholder="Teslimat adresi" />
                                     </Box>
-                                    <Button type="submit" bg="#0d47a1" color="white"
+                                    <Button type="submit" bg="#1b1b6b" color="white"
                                         _hover={{ bg: '#1565c0' }} isLoading={formLoading}
                                         alignSelf="flex-start" px={8}>
                                         Kaydet
@@ -295,12 +304,26 @@ function Profile() {
                                                         : '-'}
                                                 </Text>
                                             </Box>
-                                            <Badge
-                                                colorScheme={order.orderStatus ? 'green' : 'yellow'}
-                                                px={3} py={1} borderRadius="full"
-                                            >
-                                                {order.orderStatus ? '✓ Tamamlandı' : '⏳ Beklemede'}
-                                            </Badge>
+                                            {(() => {
+                                                const returnStatus = getReturnStatus(order.id);
+                                                if (returnStatus === 'APPROVED') {
+                                                    return <Badge colorScheme="purple" px={3} py={1} borderRadius="full">↩️ İade Edildi</Badge>;
+                                                } else if (returnStatus === 'PENDING') {
+                                                    return <Badge colorScheme="orange" px={3} py={1} borderRadius="full">⏳ İade Beklemede</Badge>;
+                                                } else if (returnStatus === 'REJECTED') {
+                                                    return <Badge colorScheme="red" px={3} py={1} borderRadius="full">✗ İade Reddedildi</Badge>;
+                                                } else {
+                                                    return (
+                                                        <Badge
+                                                            colorScheme={order.orderStatus ? 'green' : 'yellow'}
+                                                            px={3} py={1}
+                                                            borderRadius="full"
+                                                        >
+                                                            {order.orderStatus ? '✓ Tamamlandı' : '⏳ Beklemede'}
+                                                        </Badge>
+                                                    );
+                                                }
+                                            })()}
                                         </Flex>
                                         <Divider mb={3} />
                                         <Flex justify="space-between" align="center">
