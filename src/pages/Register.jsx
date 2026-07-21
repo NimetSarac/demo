@@ -70,6 +70,7 @@ function Register() {
 
         setLoading(true);
 
+       
         try {
             await api.post(
                 `/api/auth/register?username=${form.username}&email=${form.email}&password=${form.password}`
@@ -77,12 +78,14 @@ function Register() {
 
             showToast(toast, {
                 title: 'Kayıt Başarılı',
-                description: 'Hesabınız oluşturuldu, giriş sayfasına yönlendiriliyorsunuz.',
+                description: 'E-posta adresinize doğrulama kodu gönderildi.',
                 status: 'success'
             });
 
-            // 2 saniye bekle sonra login'e yönlendir
-             navigate('/login');
+            // E-posta doğrulama sayfasına yönlendir — email'i state ile geç
+            navigate('/verify-email', { state: { email: form.email } });
+
+
 
         } catch (err) {
             showToast(toast, {

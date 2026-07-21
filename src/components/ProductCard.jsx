@@ -23,10 +23,7 @@ function ProductCard({ product }) {
 
     const handleAddToCart = async (e) => {
         e.stopPropagation(); // Kart tıklamasını engelle
-        if (!user) {
-            navigate('/login');
-            return;
-        }
+        
         try {
             await addToCart(product.id, 1);
             showToast(toast, {

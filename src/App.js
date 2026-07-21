@@ -21,6 +21,7 @@ import Categories from './pages/admin/Categories';
 import ProductDetail from "./pages/ProductDetail";
 import Favorites from './pages/Favorites';
 import ForgotPassword from './pages/ForgotPassword';
+ import VerifyEmail from './pages/VerifyEmail';
 
 function App() {
   return (
@@ -37,7 +38,7 @@ function App() {
           <Layout><PrivateRoute><Profile /></PrivateRoute></Layout>
         } />
         <Route path="/cart" element={
-          <Layout><PrivateRoute><Cart /></PrivateRoute></Layout>
+          <Layout><Cart /></Layout>
         } />
         <Route path="/checkout" element={
           <Layout><PrivateRoute><Checkout /></PrivateRoute></Layout>
@@ -52,6 +53,8 @@ function App() {
           <Layout><PrivateRoute><Favorites /></PrivateRoute></Layout>
         } />
 
+        <Route path="/verify-email" element={
+          <Layout><VerifyEmail /></Layout>} />
 
         {/* Admin sayfalar */}
         <Route path="/admin" element={

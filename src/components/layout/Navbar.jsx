@@ -52,11 +52,11 @@ function Navbar() {
                 <HStack spacing={4}>
 
                     {/* Sepet ikonu — sadece giriş yapılmışsa */}
-                    {user && (
                         <Box position="relative">
                             <Link as={RouterLink} to="/cart" color="white" fontSize="xl">
                                 🛒
                             </Link>
+
                             {cartCount > 0 && (
                                 <Badge
                                     colorScheme="red"
@@ -75,7 +75,7 @@ function Navbar() {
                                 </Badge>
                             )}
                         </Box>
-                    )}
+                    
 
                     {/* Giriş/Çıkış */}
                     {user ? (
