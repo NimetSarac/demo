@@ -4,7 +4,7 @@ import {
     Box, Grid, Heading, Text, Button, Badge,
     HStack, VStack, Image, Divider, Breadcrumb,
     BreadcrumbItem, BreadcrumbLink, Spinner, Center,
-    Input,Flex
+    Input, Flex
 } from '@chakra-ui/react';
 import { useCart } from '../context/CartContext';
 import { useFavorite } from '../context/FavoriteContext';
@@ -28,11 +28,12 @@ function ProductDetail() {
     const [similarProducts, setSimilarProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [quantity, setQuantity] = useState(1);
-    const [addingToCart, setAddingToCart] = useState(false);
     const [reviews, setReviews] = useState([]);
     const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '' });
     const [reviewLoading, setReviewLoading] = useState(false);
-
+    const [productImages, setProductImages] = useState([]);
+    const [activeImage, setActiveImage] = useState(0);
+    const [addingToCart, setAddingToCart] = useState(false);
     useEffect(() => {
         fetchProduct();
         window.scrollTo(0, 0);
@@ -40,6 +41,8 @@ function ProductDetail() {
 
     const fetchProduct = async () => {
         setLoading(true);
+        const imgRes = await api.get(`/api/products/${id}/images`);
+        setProductImages(imgRes.data.data || []);
         try {
             const res = await api.get(`/api/products/${id}`);
             const productData = res.data.data || res.data;
@@ -69,7 +72,7 @@ function ProductDetail() {
         if (!user) { navigate('/login'); return; }
         setAddingToCart(true);
         try {
-            await addToCart(product.id, quantity);
+            await addToCart(product.id, quantity, product.name, product.price);
             showToast(toast, {
                 title: 'Sepete Eklendi',
                 description: `${product.name} sepetinize eklendi.`,
@@ -169,6 +172,7 @@ function ProductDetail() {
 
                 {/* Sol — Büyük Görsel */}
                 <Box>
+                    {/* Ana resim */}
                     <Box
                         bg="white"
                         borderRadius="xl"
@@ -179,8 +183,17 @@ function ProductDetail() {
                         alignItems="center"
                         justifyContent="center"
                         position="relative"
+                        mb={3}
                     >
-                        {product.image && product.image.startsWith('http') ? (
+                        {productImages.length > 0 ? (
+                            <Image
+                                src={`http://localhost:8080${productImages[activeImage]?.imageUrl}`}
+                                alt={product.name}
+                                objectFit="contain"
+                                maxH="380px"
+                                maxW="100%"
+                            />
+                        ) : product.image && product.image.startsWith('http') ? (
                             <Image
                                 src={product.image}
                                 alt={product.name}
@@ -196,8 +209,7 @@ function ProductDetail() {
                         {product.discount > 0 && (
                             <Badge
                                 position="absolute"
-                                top={4}
-                                left={4}
+                                top={4} left={4}
                                 bg="red.500"
                                 color="white"
                                 fontSize="md"
@@ -207,8 +219,65 @@ function ProductDetail() {
                                 %{product.discount} İNDİRİM
                             </Badge>
                         )}
+
+                        {/* Ok butonları */}
+                        {productImages.length > 1 && (
+                            <>
+                                <Button
+                                    position="absolute"
+                                    left={2}
+                                    size="sm"
+                                    borderRadius="full"
+                                    bg="whiteAlpha.800"
+                                    onClick={() => setActiveImage(i => Math.max(0, i - 1))}
+                                    isDisabled={activeImage === 0}
+                                >
+                                    ←
+                                </Button>
+                                <Button
+                                    position="absolute"
+                                    right={2}
+                                    size="sm"
+                                    borderRadius="full"
+                                    bg="whiteAlpha.800"
+                                    onClick={() => setActiveImage(i => Math.min(productImages.length - 1, i + 1))}
+                                    isDisabled={activeImage === productImages.length - 1}
+                                >
+                                    →
+                                </Button>
+                            </>
+                        )}
                     </Box>
+
+                    {/* Küçük resimler */}
+                    {productImages.length > 1 && (
+                        <HStack spacing={2} justify="center">
+                            {productImages.map((img, i) => (
+                                <Box
+                                    key={img.id}
+                                    w="60px"
+                                    h="60px"
+                                    borderRadius="md"
+                                    overflow="hidden"
+                                    cursor="pointer"
+                                    border="2px solid"
+                                    borderColor={activeImage === i ? '#0d47a1' : 'transparent'}
+                                    onClick={() => setActiveImage(i)}
+                                    transition="border-color 0.2s"
+                                >
+                                    <Image
+                                        src={`http://localhost:8080${img.imageUrl}`}
+                                        alt=""
+                                        objectFit="cover"
+                                        w="100%"
+                                        h="100%"
+                                    />
+                                </Box>
+                            ))}
+                        </HStack>
+                    )}
                 </Box>
+
 
                 {/* Sağ — Ürün Bilgileri */}
                 <VStack align="start" spacing={4}>

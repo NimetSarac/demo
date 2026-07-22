@@ -96,22 +96,23 @@ export function CartProvider({ children }) {
     };
 
     // Sepete ürün ekle
-    const addToCart = async (productId, quantity = 1) => {
-        if (!user) {
-            // Giriş yapılmamış — localStorage'a ekle
-            const localCart = getLocalCart();
-            const existing = localCart.find(i => i.productId === productId);
+   const addToCart = async (productId, quantity = 1, productName = '', productPrice = 0) => {
+    if (!user) {
+        const localCart = getLocalCart();
+        const existing = localCart.find(i => i.productId === productId);
 
-            if (existing) {
-                existing.quantity += quantity;
-            } else {
-                localCart.push({ productId, quantity });
-            }
-
-            setLocalCart(localCart);
-            setCartItems(localCart);
-            return true;
+        if (existing) {
+            existing.quantity += quantity;
+        } else {
+            localCart.push({ productId, quantity, productName, productPrice });
         }
+
+        setLocalCart(localCart);
+        setCartItems(localCart);
+        return true;
+    }
+    
+
 
         // Giriş yapılmış — backend'e ekle
         try {

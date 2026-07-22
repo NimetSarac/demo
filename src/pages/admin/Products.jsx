@@ -32,7 +32,8 @@ function AdminProducts() {
     const [formLoading, setFormLoading] = useState(false);
     const [deleteId, setDeleteId] = useState(null);
     const [searchKeyword, setSearchKeyword] = useState('');
-
+    const [imageFiles, setImageFiles] = useState([]);
+    const [imagePreview, setImagePreview] = useState([]);
 
     const { isOpen: isFormOpen, onOpen: onFormOpen, onClose: onFormClose } = useDisclosure();
     const { isOpen: isDeleteOpen, onOpen: onDeleteOpen, onClose: onDeleteClose } = useDisclosure();
@@ -108,40 +109,54 @@ function AdminProducts() {
         return true;
     };
 
-    const handleSubmit = async () => {
-        if (!validate()) return;
+   const handleSubmit = async () => {
+    if (!validate()) return;
+    setFormLoading(true);
+    try {
+        const payload = {
+            name: form.name,
+            image: form.image,
+            price: Number(form.price),
+            discount: Number(form.discount) || 0,
+            stock: Number(form.stock),
+            status: form.status,
+            categoryId: Number(form.categoryId),
+            description: form.description
+        };
 
-        setFormLoading(true);
-        try {
-            const payload = {
-                name: form.name,
-                image: form.image,
-                price: Number(form.price),
-                discount: Number(form.discount) || 0,
-                stock: Number(form.stock),
-                status: form.status,
-                categoryId: Number(form.categoryId)
-            };
+        let productId;
 
-            if (selectedProduct) {
-                await api.put(`/api/products/${selectedProduct.id}`, payload);
-                showToast(toast, { title: 'Güncellendi', description: 'Ürün güncellendi.', status: 'success' });
-            } else {
-                await api.post('/api/products', payload);
-                showToast(toast, { title: 'Eklendi', description: 'Ürün eklendi.', status: 'success' });
-            }
-            await fetchData();
-            onFormClose();
-        } catch (err) {
-            showToast(toast, {
-                title: 'Hata',
-                description: err.response?.data?.message || 'İşlem başarısız.',
-                status: 'error'
-            });
-        } finally {
-            setFormLoading(false);
+        if (selectedProduct) {
+            await api.put(`/api/products/${selectedProduct.id}`, payload);
+            productId = selectedProduct.id;
+            showToast(toast, { title: 'Güncellendi', description: 'Ürün güncellendi.', status: 'success' });
+        } else {
+            const res = await api.post('/api/products', payload);
+            productId = res.data.data?.id || res.data.id;
+            showToast(toast, { title: 'Eklendi', description: 'Ürün eklendi.', status: 'success' });
         }
-    };
+
+        // Resim yükle
+        if (imageFiles.length > 0 && productId) {
+            const formData = new FormData();
+            imageFiles.forEach(f => formData.append('files', f));
+            await api.post(`/api/products/${productId}/images`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+        }
+
+        await fetchData();
+        onFormClose();
+    } catch (err) {
+        showToast(toast, {
+            title: 'Hata',
+            description: err.response?.data?.message || 'İşlem başarısız.',
+            status: 'error'
+        });
+    } finally {
+        setFormLoading(false);
+    }
+};
 
     const handleDelete = async () => {
         try {
@@ -156,12 +171,24 @@ function AdminProducts() {
                 status: 'error'
             });
         }
+
     };
+
+    // Dosya seçimi
+    const handleFileSelect = (e) => {
+        const files = Array.from(e.target.files);
+        setImageFiles(files);
+
+        // Önizleme
+        const previews = files.map(f => URL.createObjectURL(f));
+        setImagePreview(previews);
+    };
+
 
     const filteredProducts = products.filter(p =>
         (p.name || '').toLowerCase().includes(searchKeyword.toLowerCase())
     );
-   
+
 
     if (loading) return <Center py={20}><Spinner size="xl" color="blue.500" /></Center>;
 
@@ -278,6 +305,36 @@ function AdminProducts() {
                                 <Input value={form.image}
                                     onChange={e => setForm({ ...form, image: e.target.value })}
                                     placeholder="https://example.com/image.jpg" />
+                            </Box>
+                            <Box width="100%">
+                                <Text mb={1} fontWeight="medium" fontSize="sm">Resim URL (opsiyonel)</Text>
+                                <Input
+                                    value={form.image}
+                                    onChange={e => setForm({ ...form, image: e.target.value })}
+                                    placeholder="https://example.com/image.jpg"
+                                    mb={2}
+                                />
+                                <Text mb={1} fontWeight="medium" fontSize="sm">
+                                    veya Dosyadan Seç
+                                </Text>
+                                <Input
+                                    type="file"
+                                    accept="image/*"
+                                    multiple
+                                    onChange={handleFileSelect}
+                                    p={1}
+                                />
+
+                                {/* Önizleme */}
+                                {imagePreview.length > 0 && (
+                                    <HStack mt={2} spacing={2} flexWrap="wrap">
+                                        {imagePreview.map((src, i) => (
+                                            <Box key={i} w="60px" h="60px" borderRadius="md" overflow="hidden">
+                                                <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                            </Box>
+                                        ))}
+                                    </HStack>
+                                )}
                             </Box>
                             <HStack width="100%" spacing={4}>
                                 <Box flex={1}>

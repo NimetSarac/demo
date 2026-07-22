@@ -25,7 +25,7 @@ function ProductCard({ product }) {
         e.stopPropagation(); // Kart tıklamasını engelle
         
         try {
-            await addToCart(product.id, 1);
+           await addToCart(product.id, 1, product.name, product.price);
             showToast(toast, {
                 title: 'Sepete Eklendi',
                 description: `${product.name} sepetinize eklendi.`,
