@@ -23,9 +23,9 @@ function ProductCard({ product }) {
 
     const handleAddToCart = async (e) => {
         e.stopPropagation(); // Kart tıklamasını engelle
-        
+
         try {
-           await addToCart(product.id, 1, product.name, product.price);
+            await addToCart(product.id, 1, product.name, product.price);
             showToast(toast, {
                 title: 'Sepete Eklendi',
                 description: `${product.name} sepetinize eklendi.`,
@@ -87,18 +87,26 @@ function ProductCard({ product }) {
                 borderColor="gray.100"
                 overflow="hidden"
             >
-                {product.image && product.image.startsWith('http') ? (
-                    <Image
-                        src={product.image}
-                        alt={product.name}
-                        objectFit="cover"
-                        w="100%"
-                        h="100%"
-                        fallback={<Text fontSize="60px">🛍️</Text>}
-                    />
-                ) : (
-                    <Text fontSize="60px">🛍️</Text>
-                )}
+                {(() => {
+                    const imageSrc = product.image?.startsWith('http')
+                        ? product.image
+                        : product.image?.startsWith('/images')
+                            ? `http://localhost:8080${product.image}`
+                            : null;
+
+                    return imageSrc ? (
+                        <Image
+                            src={imageSrc}
+                            alt={product.name}
+                            objectFit="cover"
+                            w="100%"
+                            h="100%"
+                            fallback={<Text fontSize="60px">🛍️</Text>}
+                        />
+                    ) : (
+                        <Text fontSize="60px">🛍️</Text>
+                    );
+                })()}
 
                 {/* İndirim rozeti — sol üst */}
                 {product.discount > 0 && (
@@ -223,23 +231,23 @@ function ProductCard({ product }) {
                         borderRadius="full"
                         bg={
                             product.stock > 5 ? 'green.400'
-                            : product.stock > 0 ? 'orange.400'
-                            : 'red.400'
+                                : product.stock > 0 ? 'orange.400'
+                                    : 'red.400'
                         }
                     />
                     <Text
                         fontSize="xs"
                         color={
                             product.stock > 5 ? 'green.600'
-                            : product.stock > 0 ? 'orange.600'
-                            : 'red.600'
+                                : product.stock > 0 ? 'orange.600'
+                                    : 'red.600'
                         }
                     >
                         {product.stock > 5
                             ? `Stokta var (${product.stock})`
                             : product.stock > 0
-                            ? `Son ${product.stock} ürün!`
-                            : 'Stokta yok'}
+                                ? `Son ${product.stock} ürün!`
+                                : 'Stokta yok'}
                     </Text>
                 </HStack>
 

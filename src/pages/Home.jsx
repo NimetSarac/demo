@@ -65,6 +65,68 @@ function Home() {
                     Tüm Ürünleri Gör
                 </Button>
             </Box>
+            {/* Kampanya Bannerlari */}
+            <Grid
+                templateColumns={{ base: '1fr', md: '1fr 1fr' }}
+                gap={4}
+                mb={10}
+            >
+                {/* Yaz İndirimi */}
+                <Box
+                    bgGradient="linear(to-r, #e53935, #e91e63)"
+                    color="white"
+                    borderRadius="xl"
+                    p={8}
+                    display="flex"
+                    flexDirection="column"
+                    justifyContent="center"
+                    cursor="pointer"
+                    transition="all 0.2s"
+                    _hover={{ transform: 'translateY(-2px)', boxShadow: 'xl' }}
+                    onClick={() => navigate('/products')}
+                >
+                    <Text fontSize="3xl" mb={1}>🔥</Text>
+                    <Heading size="lg" mb={2}>Yaz İndirimi</Heading>
+                    <Text fontSize="xl" mb={4} opacity={0.9}>
+                        %50'ye Varan İndirim
+                    </Text>
+                    <Button
+                        as={RouterLink}
+                        to="/products"
+                        bg="white"
+                        color="#e53935"
+                        size="sm"
+                        alignSelf="flex-start"
+                        fontWeight="bold"
+                        _hover={{ bg: 'gray.100' }}
+                    >
+                        Şimdi Keşfet →
+                    </Button>
+                </Box>
+
+                {/* Ücretsiz Kargo */}
+                <Box
+                    bgGradient="linear(to-r, #1565c0, #0288d1)"
+                    color="white"
+                    borderRadius="xl"
+                    p={8}
+                    display="flex"
+                    flexDirection="column"
+                    justifyContent="center"
+                    cursor="pointer"
+                    transition="all 0.2s"
+                    _hover={{ transform: 'translateY(-2px)', boxShadow: 'xl' }}
+                >
+                    <Text fontSize="3xl" mb={1}>🚚</Text>
+                    <Heading size="lg" mb={2}>Ücretsiz Kargo</Heading>
+                    <Text fontSize="xl" opacity={0.9}>
+                        2000 TL Üzeri Tüm Siparişlerde
+                    </Text>
+                    <Text fontSize="sm" mt={2} opacity={0.7}>
+                        Hızlı ve güvenli teslimat garantisi
+                    </Text>
+                </Box>
+            </Grid>
 
             {/* Kategoriler */}
             <Heading size="lg" mb={6}>Kategoriler</Heading>

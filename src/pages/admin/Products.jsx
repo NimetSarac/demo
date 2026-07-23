@@ -124,25 +124,34 @@ function AdminProducts() {
             description: form.description
         };
 
+       
         let productId;
-
         if (selectedProduct) {
             await api.put(`/api/products/${selectedProduct.id}`, payload);
             productId = selectedProduct.id;
-            showToast(toast, { title: 'Güncellendi', description: 'Ürün güncellendi.', status: 'success' });
+            showToast(toast, { title: 'Güncellendi', status: 'success' });
         } else {
             const res = await api.post('/api/products', payload);
             productId = res.data.data?.id || res.data.id;
-            showToast(toast, { title: 'Eklendi', description: 'Ürün eklendi.', status: 'success' });
+            showToast(toast, { title: 'Eklendi', status: 'success' });
         }
 
         // Resim yükle
         if (imageFiles.length > 0 && productId) {
             const formData = new FormData();
             imageFiles.forEach(f => formData.append('files', f));
-            await api.post(`/api/products/${productId}/images`, formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
+            const imgRes = await api.post(
+                `/api/products/${productId}/images`,
+                formData,
+                { headers: { 'Content-Type': 'multipart/form-data' } }
+            );
+            const uploadedUrls = imgRes.data.data;
+            if (uploadedUrls && uploadedUrls.length > 0) {
+                await api.put(`/api/products/${productId}`, {
+                    ...payload,
+                    image: `http://localhost:8080${uploadedUrls[0]}`
+                });
+            }
         }
 
         await fetchData();
@@ -157,6 +166,7 @@ function AdminProducts() {
         setFormLoading(false);
     }
 };
+
 
     const handleDelete = async () => {
         try {
