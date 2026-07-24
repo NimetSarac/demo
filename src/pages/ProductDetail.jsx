@@ -14,6 +14,7 @@ import { showToast } from '../services/toastHelper';
 import api from '../services/api';
 import ProductCard from '../components/ProductCard';
 import EmptyState from '../components/EmptyState';
+import ShareProduct from '../components/ShareProduct';
 
 function ProductDetail() {
 
@@ -398,6 +399,7 @@ function ProductDetail() {
                         >
                             {isFavorite(product.id) ? '❤️' : '🤍'}
                         </Button>
+                         <ShareProduct product={product} />
                     </HStack>
 
                     {/* Hızlı satın al */}

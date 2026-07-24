@@ -18,6 +18,11 @@ function AdminOrders() {
     const { isOpen, onOpen, onClose } = useDisclosure();
     const toast = useToast();
 
+    const [cargoForm, setCargoForm] = useState({
+        cargoStatus: '',
+        cargoTrackingNumber: '',
+        cargoCompany: ''
+    });
     useEffect(() => { fetchOrders(); }, []);
 
     const fetchOrders = async () => {
@@ -35,7 +40,7 @@ function AdminOrders() {
                         userName: user.username
                     }));
                     allOrders.push(...userOrders);
-                } catch (err) {}
+                } catch (err) { }
             }
             setOrders(allOrders.sort((a, b) => b.id - a.id));
         } catch (err) {
@@ -156,6 +161,57 @@ function AdminOrders() {
                                             : '-'}
                                     </Text>
                                 </Flex>
+
+                                <Divider />
+                                <Box>
+                                    <Text fontWeight="medium" mb={3}>Kargo Güncelle</Text>
+                                    <VStack spacing={3}>
+                                        <Select
+                                            placeholder="Kargo durumu seç"
+                                            value={cargoForm.cargoStatus}
+                                            onChange={e => setCargoForm({ ...cargoForm, cargoStatus: e.target.value })}
+                                        >
+                                            <option value="HAZIRLANIYOR">📦 Hazırlanıyor</option>
+                                            <option value="KARGOYA_VERILDI">🚚 Kargoya Verildi</option>
+                                            <option value="DAGITIMDA">🛵 Dağıtımda</option>
+                                            <option value="TESLIM_EDILDI">✅ Teslim Edildi</option>
+                                        </Select>
+                                        <Input
+                                            placeholder="Kargo firması (Yurtiçi, Aras...)"
+                                            value={cargoForm.cargoCompany}
+                                            onChange={e => setCargoForm({ ...cargoForm, cargoCompany: e.target.value })}
+                                        />
+                                        <Input
+                                            placeholder="Takip numarası"
+                                            value={cargoForm.cargoTrackingNumber}
+                                            onChange={e => setCargoForm({ ...cargoForm, cargoTrackingNumber: e.target.value })}
+                                        />
+                                        <Button
+                                            bg="#0d47a1"
+                                            color="white"
+                                            width="100%"
+                                            _hover={{ bg: '#1565c0' }}
+                                            onClick={async () => {
+                                                if (!cargoForm.cargoStatus) return;
+                                                try {
+                                                    await api.put(
+                                                        `/api/orders/${selectedOrder.id}/cargo?cargoStatus=${cargoForm.cargoStatus}&cargoTrackingNumber=${cargoForm.cargoTrackingNumber}&cargoCompany=${cargoForm.cargoCompany}`
+                                                    );
+                                                    showToast(toast, {
+                                                        title: 'Kargo Güncellendi',
+                                                        status: 'success'
+                                                    });
+                                                    await fetchOrders();
+                                                    onClose();
+                                                } catch (err) {
+                                                    showToast(toast, { title: 'Hata', status: 'error' });
+                                                }
+                                            }}
+                                        >
+                                            Kargoyu Güncelle
+                                        </Button>
+                                    </VStack>
+                                </Box>
                                 <Divider />
                                 <Box>
                                     <Text fontWeight="medium" mb={2}>Durum Güncelle</Text>
@@ -179,6 +235,7 @@ function AdminOrders() {
                                     </HStack>
                                 </Box>
                             </VStack>
+
                         )}
                     </ModalBody>
                     <ModalFooter>

@@ -9,6 +9,7 @@ import {
     ModalCloseButton, useDisclosure
 } from '@chakra-ui/react';
 import EmptyState from '../../components/EmptyState';
+import { useNavigate } from 'react-router-dom';
 
 function OrderHistory() {
 
@@ -17,6 +18,7 @@ function OrderHistory() {
     const [loading, setLoading] = useState(true);
     const [selectedOrder, setSelectedOrder] = useState(null);
     const { isOpen, onOpen, onClose } = useDisclosure();
+     const navigate = useNavigate();
 
     useEffect(() => {
         if (user) {
@@ -90,7 +92,7 @@ function OrderHistory() {
                                             day: 'numeric',
                                             hour: '2-digit',
                                             minute: '2-digit'
-                                          })
+                                        })
                                         : '-'}
                                 </Text>
                             </Box>
@@ -124,6 +126,7 @@ function OrderHistory() {
                                 >
                                     🛍️
                                 </Box>
+
                                 <Box>
                                     <Text fontSize="sm" fontWeight="medium">
                                         {order.product?.name || 'Ürün'}
@@ -164,6 +167,14 @@ function OrderHistory() {
                                         {selectedOrder.orderStatus ? '✓ Tamamlandı' : '⏳ Beklemede'}
                                     </Badge>
                                 </Flex>
+                                <Button
+                                    size="xs"
+                                    colorScheme="blue"
+                                    variant="outline"
+                                    onClick={() => navigate(`/orders/${selectedOrder.id}/track`)}
+                                >
+                                    📍 Takip Et
+                                </Button>
 
                                 {/* Tarih */}
                                 <Flex justify="space-between">
@@ -176,7 +187,7 @@ function OrderHistory() {
                                                 day: 'numeric',
                                                 hour: '2-digit',
                                                 minute: '2-digit'
-                                              })
+                                            })
                                             : '-'}
                                     </Text>
                                 </Flex>
